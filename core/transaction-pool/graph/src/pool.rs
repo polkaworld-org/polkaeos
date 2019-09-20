@@ -28,7 +28,7 @@ use crate::rotator::PoolRotator;
 use crate::watcher::Watcher;
 use serde::Serialize;
 use error_chain::bail;
-use log::debug;
+use log::{debug, info};
 
 use futures::sync::mpsc;
 use parking_lot::{Mutex, RwLock};
@@ -39,6 +39,8 @@ use sr_primitives::{
 };
 
 pub use crate::base_pool::Limit;
+
+use eosio::{BlockTraceData as EOSBlock};
 
 /// Modification notification event stream type;
 pub type EventStream = mpsc::UnboundedReceiver<()>;
@@ -111,6 +113,9 @@ pub struct Pool<B: ChainApi> {
 	>>,
 	import_notification_sinks: Mutex<Vec<mpsc::UnboundedSender<()>>>,
 	rotator: PoolRotator<ExHash<B>>,
+
+	// Just a tmp way to imp it
+	eos_pool: RwLock<Vec<EOSBlock>>,
 }
 
 impl<B: ChainApi> Pool<B> {
@@ -366,6 +371,7 @@ impl<B: ChainApi> Pool<B> {
 
 	/// Create a new transaction pool.
 	pub fn new(options: Options, api: B) -> Self {
+		info!("new transaction pool!");
 		Pool {
 			api,
 			options,
@@ -373,6 +379,7 @@ impl<B: ChainApi> Pool<B> {
 			pool: Default::default(),
 			import_notification_sinks: Default::default(),
 			rotator: Default::default(),
+			eos_pool:Default::default(),
 		}
 	}
 

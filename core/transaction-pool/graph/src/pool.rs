@@ -19,6 +19,7 @@ use std::{
 	hash,
 	sync::Arc,
 	time,
+	thread,
 };
 
 use crate::base_pool as base;
@@ -28,7 +29,7 @@ use crate::rotator::PoolRotator;
 use crate::watcher::Watcher;
 use serde::Serialize;
 use error_chain::bail;
-use log::{debug, info};
+use log::{debug, info, warn};
 
 use futures::sync::mpsc;
 use parking_lot::{Mutex, RwLock};
@@ -115,7 +116,7 @@ pub struct Pool<B: ChainApi> {
 	rotator: PoolRotator<ExHash<B>>,
 
 	// Just a tmp way to imp it
-	eos_pool: RwLock<Vec<EOSBlock>>,
+	eos_pool: Arc<RwLock<Vec<EOSBlock>>>,
 }
 
 impl<B: ChainApi> Pool<B> {
@@ -369,10 +370,50 @@ impl<B: ChainApi> Pool<B> {
 		Ok(())
 	}
 
+	fn start_eosio_handler( &self ) {
+		let eos_pool = self.eos_pool.clone();
+		let handler = thread::spawn(move|| {
+			// just use zmq to get all datas
+			let context = zmq::Context::new();
+			let router = context.socket(zmq::ROUTER).unwrap();
+
+			loop {
+				if router.bind("tcp://*:15555").is_ok() {
+					break;
+				}else{
+					warn!("try to bind zmq channel for eos blocks");
+					thread::sleep(time::Duration::from_secs(1));
+				}
+			}
+
+			loop {
+				let identity = router.recv_bytes(0).unwrap();
+
+				let block_str = router.recv_string(0).unwrap().unwrap();
+				let block_result : Result<EOSBlock, _> = rustc_serialize::json::decode(&block_str);
+
+				if let Err(err) = block_result {
+					info!("err by {:?}", err);
+					continue;
+				}
+
+				let brd = block_result.unwrap();
+
+				info!("block received, num: {}, trx size: {}\n", brd.num, brd.transactions.len());
+
+				{
+					let mut eos = eos_pool.write();
+
+					eos.push(brd);
+				}
+			}
+		});
+	}
+
 	/// Create a new transaction pool.
 	pub fn new(options: Options, api: B) -> Self {
 		info!("new transaction pool!");
-		Pool {
+		let res = Pool {
 			api,
 			options,
 			listener: Default::default(),
@@ -380,7 +421,11 @@ impl<B: ChainApi> Pool<B> {
 			import_notification_sinks: Default::default(),
 			rotator: Default::default(),
 			eos_pool:Default::default(),
-		}
+		};
+
+		res.start_eosio_handler();
+
+		res
 	}
 
 	/// Return an event stream of transactions imported to the pool.

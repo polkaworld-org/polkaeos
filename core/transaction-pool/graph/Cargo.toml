@@ -13,6 +13,8 @@ serde = { version = "1.0", features = ["derive"] }
 substrate-primitives = { path = "../../primitives" }
 sr-primitives = { path = "../../sr-primitives" }
 
+zmq = "0.9"
+rustc-serialize = "0.3"
 eosio = { path = "../../../polkeos/eosio" }
 
 [dev-dependencies]

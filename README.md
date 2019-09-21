@@ -1,9 +1,6 @@
 # Polkaeos
 
 - [Polkaeos](#polkaeos)
-  - [1 Introduction](#1-introduction)
-  - [2. Getting Start](#2-getting-start)
-  - [3. TODOs](#3-todos)
   - [1. Introduction] (#1-introduction)
   - [2. Getting Start](#2-getting-start)
   - [3. TODOs](#3-todos)
@@ -12,7 +9,7 @@
 
 `Polkaeos` is a polkadot-EOSIO cross-chain bridge implementation with no loss of trust. The design scheme can be seen in:
 
- [Polkaeos: A Polkadot-EOSIO Cross-Chain Bridge Implementation without Trust Loss]()
+ [Polkaeos: A Polkadot-EOSIO Cross-Chain Bridge Implementation without Trust Loss](https://github.com/polkaeos/polkaeos/blob/demo/desgin.md)
 
 ## 2. Getting Start
 

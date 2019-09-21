@@ -4,6 +4,8 @@ Fan Yang fanyang.coder@gmail.com
 
 > As I have less time to make a totel english version of polkaros doc, so most of this doc was make by google translate and some changes, it will make lots of mistake
 
+[中文版本](https://github.com/polkaeos/polkaeos/blob/demo/desgin_zh.md)
+
 ## 0. Preface
 
 Cross-Chain Bridge is one of the most important part in Polkadot. In Polkadot whitepaper proposed a design to implement cross-chain from polkadot to ETH or Bitcoin. In this document propose the `Polkaeos` which is a cross-chain implementation between polkadot and EOSIO without trust loss. At present, EOSIO is one of the main technologies of block chain, so it is of great value to build a cross-chain bridge between Polkadot and EOSIO.

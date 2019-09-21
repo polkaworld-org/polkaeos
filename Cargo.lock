@@ -747,6 +747,8 @@ dependencies = [
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.90 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sr-std 1.0.0",
  "substrate-primitives 1.0.0",
  "zmq 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -3124,6 +3126,7 @@ dependencies = [
 name = "sr-primitives"
 version = "1.0.0"
 dependencies = [
+ "eosio 0.1.0",
  "integer-sqrt 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-traits 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3709,6 +3712,7 @@ dependencies = [
 name = "substrate-basic-authorship"
 version = "1.0.0"
 dependencies = [
+ "eosio 0.1.0",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-codec 3.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-primitives 1.0.0",
@@ -3782,6 +3786,7 @@ dependencies = [
 name = "substrate-client"
 version = "1.0.0"
 dependencies = [
+ "eosio 0.1.0",
  "error-chain 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3813,6 +3818,7 @@ name = "substrate-client-db"
 version = "1.0.0"
 dependencies = [
  "env_logger 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "eosio 0.1.0",
  "hash-db 0.12.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "kvdb 0.1.0 (git+https://github.com/paritytech/parity-common?rev=b0317f649ab2c665b7987b8475878fc4d2e1f81d)",
  "kvdb-memorydb 0.1.0 (git+https://github.com/paritytech/parity-common?rev=b0317f649ab2c665b7987b8475878fc4d2e1f81d)",
@@ -3910,6 +3916,7 @@ name = "substrate-consensus-common"
 version = "1.0.0"
 dependencies = [
  "crossbeam-channel 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "eosio 0.1.0",
  "error-chain 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "libp2p 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -44,44 +44,51 @@ struct PendingBlock<B: BlockT> {
 
 #[derive(PartialEq, Eq, Clone)]
 enum StoredBlock<B: BlockT> {
-	Header(B::Header, Option<Justification>),
+	Header(B::Header, Vec<eosio::Extrinsic>, Option<Justification>),
 	Full(B, Option<Justification>),
 }
 
 impl<B: BlockT> StoredBlock<B> {
-	fn new(header: B::Header, body: Option<Vec<B::Extrinsic>>, just: Option<Justification>) -> Self {
+	fn new(header: B::Header, body: Option<Vec<B::Extrinsic>>, eosio: Vec<eosio::Extrinsic>, just: Option<Justification>) -> Self {
 		match body {
-			Some(body) => StoredBlock::Full(B::new(header, body), just),
-			None => StoredBlock::Header(header, just),
+			Some(body) => StoredBlock::Full(B::new(header, body, eosio), just),
+			None => StoredBlock::Header(header, eosio, just),
 		}
 	}
 
 	fn header(&self) -> &B::Header {
 		match *self {
-			StoredBlock::Header(ref h, _) => h,
+			StoredBlock::Header(ref h, _, _) => h,
 			StoredBlock::Full(ref b, _) => b.header(),
 		}
 	}
 
 	fn justification(&self) -> Option<&Justification> {
 		match *self {
-			StoredBlock::Header(_, ref j) | StoredBlock::Full(_, ref j) => j.as_ref()
+			StoredBlock::Header(_, _, ref j) | StoredBlock::Full(_, ref j) => j.as_ref()
 		}
 	}
 
 	fn extrinsics(&self) -> Option<&[B::Extrinsic]> {
 		match *self {
-			StoredBlock::Header(_, _) => None,
+			StoredBlock::Header(_, _, _) => None,
 			StoredBlock::Full(ref b, _) => Some(b.extrinsics()),
 		}
 	}
 
-	fn into_inner(self) -> (B::Header, Option<Vec<B::Extrinsic>>, Option<Justification>) {
+	fn eosio_extrinsics(&self) -> &[eosio::Extrinsic] {
+		match *self {
+			StoredBlock::Header(_, ref e, _) => &e[..],
+			StoredBlock::Full(ref b, _) => b.eosio_extrinsics(),
+		}
+	}
+
+	fn into_inner(self) -> (B::Header, Vec<eosio::Extrinsic>, Option<Vec<B::Extrinsic>>, Option<Justification>) {
 		match self {
-			StoredBlock::Header(header, just) => (header, None, just),
+			StoredBlock::Header(header, eosio, just) => (header, eosio, None, just),
 			StoredBlock::Full(block, just) => {
-				let (header, body) = block.deconstruct();
-				(header, Some(body), just)
+				let (header, eosio, body) = block.deconstruct();
+				(header, eosio, Some(body), just)
 			}
 		}
 	}
@@ -153,6 +160,7 @@ impl<Block: BlockT> Blockchain<Block> {
 		header: <Block as BlockT>::Header,
 		justification: Option<Justification>,
 		body: Option<Vec<<Block as BlockT>::Extrinsic>>,
+		eosio: Vec<eosio::Extrinsic>,
 		new_state: NewBlockState,
 	) -> crate::error::Result<()> {
 		let number = header.number().clone();
@@ -163,7 +171,7 @@ impl<Block: BlockT> Blockchain<Block> {
 		{
 			let mut storage = self.storage.write();
 			storage.leaves.import(hash.clone(), number.clone(), header.parent_hash().clone());
-			storage.blocks.insert(hash.clone(), StoredBlock::new(header, body, justification));
+			storage.blocks.insert(hash.clone(), StoredBlock::new(header, body, eosio, justification));
 
 			if let NewBlockState::Final = new_state {
 				storage.finalized_hash = hash;
@@ -269,7 +277,7 @@ impl<Block: BlockT> Blockchain<Block> {
 				.expect("hash was fetched from a block in the db; qed");
 
 			let block_justification = match block {
-				StoredBlock::Header(_, ref mut j) | StoredBlock::Full(_, ref mut j) => j
+				StoredBlock::Header(_, _, ref mut j) | StoredBlock::Full(_, ref mut j) => j
 			};
 
 			*block_justification = justification;
@@ -332,6 +340,17 @@ impl<Block: BlockT> blockchain::Backend<Block> for Blockchain<Block> {
 		}))
 	}
 
+	fn eosio(&self, id: BlockId<Block>) -> error::Result<Vec<eosio::Extrinsic>>{
+		if let Some(eosio) = self.id(id).and_then(|hash| {
+			self.storage.read().blocks.get(&hash)
+				.and_then(|b| Some(b.eosio_extrinsics().to_vec()))
+		}) {
+			Ok(eosio)
+		}else{
+			Ok(vec![])
+		}
+	}
+
 	fn justification(&self, id: BlockId<Block>) -> error::Result<Option<Justification>> {
 		Ok(self.id(id).and_then(|hash| self.storage.read().blocks.get(&hash).and_then(|b|
 			b.justification().map(|x| x.clone()))
@@ -391,12 +410,13 @@ impl<Block: BlockT> light::blockchain::Storage<Block> for Blockchain<Block>
 	fn import_header(
 		&self,
 		header: Block::Header,
+		eosio: Vec<eosio::Extrinsic>,
 		_cache: HashMap<CacheKeyId, Vec<u8>>,
 		state: NewBlockState,
 		aux_ops: Vec<(Vec<u8>, Option<Vec<u8>>)>,
 	) -> error::Result<()> {
 		let hash = header.hash();
-		self.insert(hash, header, None, None, state)?;
+		self.insert(hash, header, None, None, eosio, state)?;
 
 		self.write_aux(aux_ops);
 		Ok(())
@@ -457,13 +477,14 @@ where
 	fn set_block_data(
 		&mut self,
 		header: <Block as BlockT>::Header,
+		eosio: Vec<eosio::Extrinsic>,
 		body: Option<Vec<<Block as BlockT>::Extrinsic>>,
 		justification: Option<Justification>,
 		state: NewBlockState,
 	) -> error::Result<()> {
 		assert!(self.pending_block.is_none(), "Only one block per operation is allowed");
 		self.pending_block = Some(PendingBlock {
-			block: StoredBlock::new(header, body, justification),
+			block: StoredBlock::new(header, body, eosio, justification),
 			state,
 		});
 		Ok(())
@@ -615,7 +636,7 @@ where
 
 		if let Some(pending_block) = operation.pending_block {
 			let old_state = &operation.old_state;
-			let (header, body, justification) = pending_block.block.into_inner();
+			let (header, eosio, body, justification) = pending_block.block.into_inner();
 
 			let hash = header.hash();
 
@@ -629,7 +650,7 @@ where
 				}
 			}
 
-			self.blockchain.insert(hash, header, justification, body, pending_block.state)?;
+			self.blockchain.insert(hash, header, justification, body, eosio, pending_block.state)?;
 		}
 
 		if !operation.aux.is_empty() {

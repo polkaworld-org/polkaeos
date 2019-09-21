@@ -108,10 +108,12 @@ mod columns {
 	pub const JUSTIFICATION: Option<u32> = Some(6);
 	pub const CHANGES_TRIE: Option<u32> = Some(7);
 	pub const AUX: Option<u32> = Some(8);
+	pub const EOSIO: Option<u32> = Some(9);
 }
 
 struct PendingBlock<Block: BlockT> {
 	header: Block::Header,
+	eosio: Vec<eosio::Extrinsic>,
 	justification: Option<Justification>,
 	body: Option<Vec<Block::Extrinsic>>,
 	leaf_state: NewBlockState,
@@ -231,6 +233,12 @@ impl<Block: BlockT> client::blockchain::Backend<Block> for BlockchainDb<Block> {
 		}
 	}
 
+	fn eosio(&self, id: BlockId<Block>) -> Result<Vec<eosio::Extrinsic>, client::error::Error> {
+		// TODO:
+		Ok(vec![])
+	}
+
+
 	fn justification(&self, id: BlockId<Block>) -> Result<Option<Justification>, client::error::Error> {
 		match read_db(&*self.db, columns::KEY_LOOKUP, columns::JUSTIFICATION, id)? {
 			Some(justification) => match Decode::decode(&mut &justification[..]) {
@@ -300,6 +308,7 @@ where Block: BlockT<Hash=H256>,
 	fn set_block_data(
 		&mut self,
 		header: Block::Header,
+		eosio: Vec<eosio::Extrinsic>,
 		body: Option<Vec<Block::Extrinsic>>,
 		justification: Option<Justification>,
 		leaf_state: NewBlockState,
@@ -307,6 +316,7 @@ where Block: BlockT<Hash=H256>,
 		assert!(self.pending_block.is_none(), "Only one block per operation is allowed");
 		self.pending_block = Some(PendingBlock {
 			header,
+			eosio,
 			body,
 			justification,
 			leaf_state,

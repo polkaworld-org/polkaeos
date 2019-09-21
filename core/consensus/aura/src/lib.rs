@@ -382,7 +382,7 @@ impl<B: Block, C, E, I, P, Error, SO> SlotWorker<B> for AuraWorker<C, E, I, P, S
 						return
 					}
 
-					let (header, body) = b.deconstruct();
+					let (header, eosio, body) = b.deconstruct();
 					let header_num = header.number().clone();
 					let pre_hash = header.hash();
 					let parent_hash = header.parent_hash().clone();
@@ -395,6 +395,10 @@ impl<B: Block, C, E, I, P, Error, SO> SlotWorker<B> for AuraWorker<C, E, I, P, S
 						slot_num,
 						signature,
 					);
+					
+					for eosio_extrinsics in eosio.clone().iter() {
+						info!("on eosio extrinsics {:?}", eosio_extrinsics);
+					}
 
 					let import_block: ImportBlock<B> = ImportBlock {
 						origin: BlockOrigin::Own,
@@ -402,6 +406,7 @@ impl<B: Block, C, E, I, P, Error, SO> SlotWorker<B> for AuraWorker<C, E, I, P, S
 						justification: None,
 						post_digests: vec![item],
 						body: Some(body),
+						eosio: eosio,
 						finalized: false,
 						auxiliary: Vec::new(),
 						fork_choice: ForkChoiceStrategy::LongestChain,
@@ -412,6 +417,8 @@ impl<B: Block, C, E, I, P, Error, SO> SlotWorker<B> for AuraWorker<C, E, I, P, S
 						  import_block.post_header().hash(),
 						  pre_hash
 					);
+
+
 					telemetry!(CONSENSUS_INFO; "aura.pre_sealed_block";
 						"header_num" => ?header_num,
 						"hash_now" => ?import_block.post_header().hash(),
@@ -623,7 +630,7 @@ impl<B: Block, C, E, P> Verifier<B> for AuraVerifier<C, E, P> where
 				// actually matches the slot set in the seal.
 				if let Some(inner_body) = body.take() {
 					inherent_data.aura_replace_inherent_data(slot_num);
-					let block = B::new(pre_header.clone(), inner_body);
+					let block = B::new(pre_header.clone(), inner_body, vec![]);
 
 					// skip the inherents verification if the runtime API is old.
 					if self.client
@@ -639,7 +646,7 @@ impl<B: Block, C, E, P> Verifier<B> for AuraVerifier<C, E, P> where
 						)?;
 					}
 
-					let (_, inner_body) = block.deconstruct();
+					let (_, _, inner_body) = block.deconstruct();
 					body = Some(inner_body);
 				}
 
@@ -653,6 +660,7 @@ impl<B: Block, C, E, P> Verifier<B> for AuraVerifier<C, E, P> where
 					header: pre_header,
 					post_digests: vec![seal],
 					body,
+					eosio: vec![],
 					finalized: false,
 					justification,
 					auxiliary: Vec::new(),

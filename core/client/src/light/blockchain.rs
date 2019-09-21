@@ -41,6 +41,7 @@ pub trait Storage<Block: BlockT>: AuxStore + BlockchainHeaderBackend<Block> {
 	fn import_header(
 		&self,
 		header: Block::Header,
+		eosio: Vec<eosio::Extrinsic>,
 		cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
 		state: NewBlockState,
 		aux_ops: Vec<(Vec<u8>, Option<Vec<u8>>)>,
@@ -153,6 +154,10 @@ impl<S, F, Block> BlockchainBackend<Block> for Blockchain<S, F> where Block: Blo
 		Ok(None)
 	}
 
+	fn eosio(&self, id: BlockId<Block>) -> ClientResult<Vec<eosio::Extrinsic>> {
+		Ok(vec![])
+	}
+
 	fn last_finalized(&self) -> ClientResult<Block::Hash> {
 		self.storage.last_finalized()
 	}
@@ -253,6 +258,7 @@ pub mod tests {
 		fn import_header(
 			&self,
 			_header: Header,
+			_eosio: Vec<eosio::Extrinsic>,
 			_cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
 			_state: NewBlockState,
 			_aux_ops: Vec<(Vec<u8>, Option<Vec<u8>>)>,

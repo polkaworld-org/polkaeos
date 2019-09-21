@@ -121,7 +121,7 @@ impl<
 		Self::initial_checks(&block);
 
 		// execute extrinsics
-		let (header, extrinsics) = block.deconstruct();
+		let (header, _, extrinsics) = block.deconstruct();
 		Self::execute_extrinsics_with_book_keeping(extrinsics, *header.number());
 
 		// any final checks

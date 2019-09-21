@@ -42,6 +42,8 @@ use substrate_telemetry::{telemetry, CONSENSUS_INFO};
 pub trait BlockBuilder<Block: BlockT> {
 	/// Push an extrinsic onto the block. Fails if the extrinsic is invalid.
 	fn push_extrinsic(&mut self, extrinsic: <Block as BlockT>::Extrinsic) -> Result<(), error::Error>;
+
+	fn push_eosio_extrinsic(&mut self, extrinsic: eosio::Extrinsic) -> Result<(), error::Error>;
 }
 
 /// Local client abstraction for the consensus.
@@ -74,6 +76,10 @@ where
 {
 	fn push_extrinsic(&mut self, extrinsic: <Block as BlockT>::Extrinsic) -> Result<(), error::Error> {
 		client::block_builder::BlockBuilder::push(self, extrinsic).map_err(Into::into)
+	}
+
+	fn push_eosio_extrinsic(&mut self, extrinsic: eosio::Extrinsic) -> Result<(), error::Error> {
+		client::block_builder::BlockBuilder::push_eosio(self, extrinsic).map_err(Into::into)
 	}
 }
 
@@ -211,6 +217,28 @@ impl<Block, C, A> Proposer<Block, C, A>	where
 				for i in inherents {
 					if let Err(e) = block_builder.push_extrinsic(i) {
 						warn!("Error while pushing inherent extrinsic from the pool: {:?}", e);
+					}
+				}
+
+				// process block from other chain
+				{
+					let mut eos_pool = self.transaction_pool.eos_pool.write();
+					let mut num = 0;
+					while let Some(b) = eos_pool.pop_front() {
+						num = num + 1;
+
+						if let Err(e) = block_builder.push_eosio_extrinsic(eosio::Extrinsic::Block(b.clone())) {
+							warn!("Error while pushing inherent extrinsic from the pool: {:?}", e);
+						}
+
+						if (self.now)() > deadline {
+							debug!("Consensus deadline reached when pushing block transactions, proceeding with proposing.");
+							break;
+						}
+
+						if num > 8 {
+							break;
+						}
 					}
 				}
 

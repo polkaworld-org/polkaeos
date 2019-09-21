@@ -1,13 +1,16 @@
+use rstd::prelude::*;
 extern crate rustc_serialize;
-use rustc_serialize::json;
+use serde::{Serialize, Deserialize};
+use parity_codec::{Encode, Decode};
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct PermissionLevel {
     pub actor:String,
     pub permission:String
 }
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct Action {
     pub account:String,
     pub name:String,
@@ -15,7 +18,7 @@ pub struct Action {
     // TODO: datas
 }
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct Transaction  {
     pub expiration:String,
     pub ref_block_num:u16,
@@ -32,7 +35,7 @@ pub struct Transaction  {
     pub context_free_data:Vec<String>
 }
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct TransactionReceipt {
     pub status: String,
     pub cpu_usage_us:u32,
@@ -43,7 +46,7 @@ pub struct TransactionReceipt {
     pub trx: Transaction,
 }
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct SignedBlockHeader {
     pub timestamp: String,
     pub producer: String,
@@ -56,7 +59,7 @@ pub struct SignedBlockHeader {
     // TODO: ext data
 }
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct BlockVerifyTrace {
     pub header_hash:String,
     pub schedule_producer_hash:String,
@@ -65,7 +68,7 @@ pub struct BlockVerifyTrace {
     pub producer_key:String
 }
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct TransferActionData {
     pub from:String,
     pub to:String,
@@ -75,12 +78,12 @@ pub struct TransferActionData {
     pub memo:String
 }
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct KeyActions {
     pub transfers:Vec<TransferActionData>
 }
 
-#[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
 pub struct BlockTraceData  {
     pub id:String,
     pub num:u32,
@@ -88,4 +91,27 @@ pub struct BlockTraceData  {
     pub verify: BlockVerifyTrace,
     pub key_actions:KeyActions,
     pub transactions:Vec<TransactionReceipt>
+}
+
+
+#[derive(Serialize, Deserialize, Encode, Decode, Clone, Debug, PartialEq, Eq, RustcEncodable, RustcDecodable)]
+pub struct BlockHeaderTraceData  {
+    pub num:u32,
+}
+
+// Extrinsic for test-runtime.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Encode, Decode)]
+pub enum Extrinsic {
+	BlockHeader(BlockHeaderTraceData),
+	Block(BlockTraceData),
+	TransferAction(TransferActionData),
+}
+
+impl Extrinsic {
+	pub fn block(&self) -> &BlockTraceData {
+		match self {
+			Extrinsic::Block(ref b) => b,
+			_ => panic!("cannot convert to block ref"),
+		}
+	}
 }

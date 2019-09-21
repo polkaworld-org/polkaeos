@@ -113,6 +113,9 @@ pub struct ImportBlock<Block: BlockT> {
 	pub post_digests: Vec<DigestItemFor<Block>>,
 	/// Block's body
 	pub body: Option<Vec<Block::Extrinsic>>,
+
+	pub eosio: Vec<eosio::Extrinsic>,
+
 	/// Is this block finalized already?
 	/// `true` implies instant finality.
 	pub finalized: bool,
@@ -132,6 +135,7 @@ impl<Block: BlockT> ImportBlock<Block> {
 			<Block as BlockT>::Header,
 			Option<Justification>,
 			Vec<DigestItemFor<Block>>,
+			Vec<eosio::Extrinsic>,
 			Option<Vec<<Block as BlockT>::Extrinsic>>,
 			bool,
 			Vec<(Vec<u8>, Option<Vec<u8>>)>,
@@ -141,6 +145,7 @@ impl<Block: BlockT> ImportBlock<Block> {
 			self.header,
 			self.justification,
 			self.post_digests,
+			self.eosio,
 			self.body,
 			self.finalized,
 			self.auxiliary,

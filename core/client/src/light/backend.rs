@@ -147,6 +147,7 @@ impl<S, F, Block, H> ClientBackend<Block, H> for Backend<S, F, H> where
 			let is_genesis_import = header.number().is_zero();
 			self.blockchain.storage().import_header(
 				header,
+				Vec::new(),
 				operation.cache,
 				operation.leaf_state,
 				operation.aux_ops,
@@ -246,6 +247,7 @@ where
 	fn set_block_data(
 		&mut self,
 		header: Block::Header,
+		eosio: Vec<eosio::Extrinsic>,
 		_body: Option<Vec<Block::Extrinsic>>,
 		_justification: Option<Justification>,
 		state: NewBlockState,

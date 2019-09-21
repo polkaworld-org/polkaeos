@@ -70,6 +70,7 @@ pub trait BlockImportOperation<Block, H> where
 	fn set_block_data(
 		&mut self,
 		header: Block::Header,
+		eosio: Vec<eosio::Extrinsic>,
 		body: Option<Vec<Block::Extrinsic>>,
 		justification: Option<Justification>,
 		state: NewBlockState,

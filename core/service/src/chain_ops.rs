@@ -147,7 +147,7 @@ pub fn import_blocks<F, E, R>(
 			break;
 		}
 		if let Some(signed) = SignedBlock::<F::Block>::decode(&mut input) {
-			let (header, extrinsics) = signed.block.deconstruct();
+			let (header, eosio, extrinsics) = signed.block.deconstruct();
 			let hash = header.hash();
 			let block  = message::BlockData::<F::Block> {
 				hash: hash,

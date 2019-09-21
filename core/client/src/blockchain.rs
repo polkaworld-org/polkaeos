@@ -83,6 +83,8 @@ pub trait Backend<Block: BlockT>: HeaderBackend<Block> {
 	/// Returns data cache reference, if it is enabled on this backend.
 	fn cache(&self) -> Option<Arc<Cache<Block>>>;
 
+	fn eosio(&self, id: BlockId<Block>) -> Result<Vec<eosio::Extrinsic>>;
+
 	/// Returns hashes of all blocks that are leaves of the block tree.
 	/// in other words, that have no children, are chain heads.
 	/// Results must be ordered best (longest, heighest) chain first.

@@ -33,6 +33,7 @@ pub fn construct_genesis_block<
 			Default::default(),
 			Default::default()
 		),
+		Default::default(),
 		Default::default()
 	)
 }

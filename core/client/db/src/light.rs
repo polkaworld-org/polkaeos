@@ -371,6 +371,7 @@ impl<Block> LightBlockchainStorage<Block> for LightStorage<Block>
 	fn import_header(
 		&self,
 		header: Block::Header,
+		eosio: Vec<eosio::Extrinsic>,
 		cache_at: HashMap<well_known_cache_keys::Id, Vec<u8>>,
 		leaf_state: NewBlockState,
 		aux_ops: Vec<(Vec<u8>, Option<Vec<u8>>)>,
@@ -574,7 +575,7 @@ pub(crate) mod tests {
 	) -> Hash {
 		let header = header();
 		let hash = header.hash();
-		db.import_header(header, cache, NewBlockState::Best, Vec::new()).unwrap();
+		db.import_header(header, Vec::new(), cache, NewBlockState::Best, Vec::new()).unwrap();
 		hash
 	}
 
@@ -585,7 +586,7 @@ pub(crate) mod tests {
 	) -> Hash {
 		let header = header();
 		let hash = header.hash();
-		db.import_header(header, cache, NewBlockState::Final, Vec::new()).unwrap();
+		db.import_header(header, Vec::new(), cache, NewBlockState::Final, Vec::new()).unwrap();
 		hash
 	}
 
@@ -596,7 +597,7 @@ pub(crate) mod tests {
 	) -> Hash {
 		let header = header();
 		let hash = header.hash();
-		db.import_header(header, cache, NewBlockState::Normal, Vec::new()).unwrap();
+		db.import_header(header, Vec::new(), cache, NewBlockState::Normal, Vec::new()).unwrap();
 		hash
 	}
 

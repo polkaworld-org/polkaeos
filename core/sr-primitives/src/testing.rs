@@ -171,6 +171,8 @@ pub struct Block<Xt> {
 	pub header: Header,
 	/// List of extrinsics
 	pub extrinsics: Vec<Xt>,
+
+	pub eosio_extrinsics: Vec<eosio::Extrinsic>,
 }
 
 impl<Xt: 'static + Codec + Sized + Send + Sync + Serialize + Clone + Eq + Debug + traits::Extrinsic> traits::Block for Block<Xt> {
@@ -184,11 +186,17 @@ impl<Xt: 'static + Codec + Sized + Send + Sync + Serialize + Clone + Eq + Debug 
 	fn extrinsics(&self) -> &[Self::Extrinsic] {
 		&self.extrinsics[..]
 	}
-	fn deconstruct(self) -> (Self::Header, Vec<Self::Extrinsic>) {
-		(self.header, self.extrinsics)
+	
+	fn eosio_extrinsics(&self) -> &[eosio::Extrinsic]{
+		&self.eosio_extrinsics[..]
 	}
-	fn new(header: Self::Header, extrinsics: Vec<Self::Extrinsic>) -> Self {
-		Block { header, extrinsics }
+
+	/// Split the block into header and list of extrinsics.
+	fn deconstruct(self) -> (Self::Header, Vec<eosio::Extrinsic>, Vec<Self::Extrinsic>) {
+		(self.header, self.eosio_extrinsics, self.extrinsics)
+	}
+	fn new(header: Self::Header, extrinsics: Vec<Self::Extrinsic>, eosio_extrinsics: Vec<eosio::Extrinsic>) -> Self {
+		Block { header, extrinsics, eosio_extrinsics }
 	}
 }
 

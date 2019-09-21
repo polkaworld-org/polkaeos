@@ -32,6 +32,7 @@ use crate::error;
 pub struct BlockBuilder<'a, Block, A: ProvideRuntimeApi> where Block: BlockT {
 	header: <Block as BlockT>::Header,
 	extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+	eosio_extrinsics: Vec<eosio::Extrinsic>,
 	api: ApiRef<'a, A::Api>,
 	block_id: BlockId<Block>,
 }
@@ -68,6 +69,7 @@ where
 		Ok(BlockBuilder {
 			header,
 			extrinsics: Vec::new(),
+			eosio_extrinsics: Vec::new(),
 			api,
 			block_id: *block_id,
 		})
@@ -95,6 +97,21 @@ where
 		})
 	}
 
+	/// Push onto the block's list of extrinsics.
+	///
+	/// This will ensure the extrinsic can be validly executed (by executing it);
+	pub fn push_eosio(&mut self, xt: eosio::Extrinsic) -> error::Result<()> {
+		use crate::runtime_api::ApiExt;
+
+		let extrinsics = &mut self.eosio_extrinsics;
+
+		self.api.map_api_result(|api| {
+			extrinsics.push(xt);
+			Ok(())
+		})
+	}
+
+
 	/// Consume the builder to return a valid `Block` containing all pushed extrinsics.
 	pub fn bake(mut self) -> error::Result<Block> {
 		self.header = self.api.finalize_block_with_context(&self.block_id, ExecutionContext::BlockConstruction)?;
@@ -104,6 +121,6 @@ where
 			HashFor::<Block>::ordered_trie_root(self.extrinsics.iter().map(Encode::encode)),
 		);
 
-		Ok(<Block as BlockT>::new(self.header, self.extrinsics))
+		Ok(<Block as BlockT>::new(self.header, self.extrinsics, self.eosio_extrinsics))
 	}
 }

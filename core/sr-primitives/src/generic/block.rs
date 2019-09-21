@@ -70,6 +70,8 @@ pub struct Block<Header, Extrinsic: MaybeSerialize> {
 	pub header: Header,
 	/// The accompanying extrinsics.
 	pub extrinsics: Vec<Extrinsic>,
+
+	pub eosio_extrinsics: Vec<eosio::Extrinsic>,
 }
 
 impl<Header, Extrinsic: MaybeSerialize> traits::Block for Block<Header, Extrinsic>
@@ -87,11 +89,14 @@ where
 	fn extrinsics(&self) -> &[Self::Extrinsic] {
 		&self.extrinsics[..]
 	}
-	fn deconstruct(self) -> (Self::Header, Vec<Self::Extrinsic>) {
-		(self.header, self.extrinsics)
+	fn eosio_extrinsics(&self) -> &[eosio::Extrinsic] {
+		&self.eosio_extrinsics[..]
 	}
-	fn new(header: Self::Header, extrinsics: Vec<Self::Extrinsic>) -> Self {
-		Block { header, extrinsics }
+	fn deconstruct(self) -> (Self::Header, Vec<eosio::Extrinsic>, Vec<Self::Extrinsic>) {
+		(self.header, self.eosio_extrinsics, self.extrinsics)
+	}
+	fn new(header: Self::Header, extrinsics: Vec<Self::Extrinsic>, eosio_extrinsics: Vec<eosio::Extrinsic>) -> Self {
+		Block { header, extrinsics, eosio_extrinsics, }
 	}
 }
 

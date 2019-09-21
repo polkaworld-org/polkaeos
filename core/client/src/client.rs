@@ -289,6 +289,7 @@ impl<B, E, Block, RA> Client<B, E, Block, RA> where
 			info!("Initializing Genesis block/state (state: {}, header-hash: {})", genesis_block.header().state_root(), genesis_block.header().hash());
 			op.set_block_data(
 				genesis_block.deconstruct().0,
+				vec![],
 				Some(vec![]),
 				None,
 				crate::backend::NewBlockState::Final
@@ -683,6 +684,7 @@ impl<B, E, Block, RA> Client<B, E, Block, RA> where
 			header,
 			justification,
 			post_digests,
+			eosio,
 			body,
 			finalized,
 			auxiliary,
@@ -718,6 +720,7 @@ impl<B, E, Block, RA> Client<B, E, Block, RA> where
 			origin,
 			hash,
 			import_headers,
+			eosio,
 			justification,
 			body,
 			new_cache,
@@ -741,6 +744,7 @@ impl<B, E, Block, RA> Client<B, E, Block, RA> where
 		origin: BlockOrigin,
 		hash: Block::Hash,
 		import_headers: PrePostHeader<Block::Header>,
+		eosio: Vec<eosio::Extrinsic>,
 		justification: Option<Justification>,
 		body: Option<Vec<Block::Extrinsic>>,
 		new_cache: HashMap<CacheKeyId, Vec<u8>>,
@@ -796,6 +800,7 @@ impl<B, E, Block, RA> Client<B, E, Block, RA> where
 
 		operation.op.set_block_data(
 			import_headers.post().clone(),
+			eosio,
 			body,
 			justification,
 			leaf_state,
@@ -867,7 +872,7 @@ impl<B, E, Block, RA> Client<B, E, Block, RA> where
 					transaction_state,
 					&mut overlay,
 					"Core_execute_block",
-					&<Block as BlockT>::new(import_headers.pre().clone(), body.unwrap_or_default()).encode(),
+					&<Block as BlockT>::new(import_headers.pre().clone(), body.unwrap_or_default(), vec![]).encode(),
 					match origin {
 						BlockOrigin::NetworkInitialSync => get_execution_manager(self.execution_strategies().syncing),
 						_ => get_execution_manager(self.execution_strategies().importing),
@@ -1094,6 +1099,10 @@ impl<B, E, Block, RA> Client<B, E, Block, RA> where
 		self.backend.blockchain().body(*id)
 	}
 
+	pub fn eosio(&self, id: &BlockId<Block>) -> error::Result<Vec<eosio::Extrinsic>> {
+		self.backend.blockchain().eosio(*id)
+	}
+
 	/// Get block justification set by id.
 	pub fn justification(&self, id: &BlockId<Block>) -> error::Result<Option<Justification>> {
 		self.backend.blockchain().justification(*id)
@@ -1103,9 +1112,9 @@ impl<B, E, Block, RA> Client<B, E, Block, RA> where
 	pub fn block(&self, id: &BlockId<Block>)
 		-> error::Result<Option<SignedBlock<Block>>>
 	{
-		Ok(match (self.header(id)?, self.body(id)?, self.justification(id)?) {
-			(Some(header), Some(extrinsics), justification) =>
-				Some(SignedBlock { block: Block::new(header, extrinsics), justification }),
+		Ok(match (self.header(id)?, self.body(id)?, self.eosio(id)?, self.justification(id)?) {
+			(Some(header), Some(extrinsics), eosio, justification) =>
+				Some(SignedBlock { block: Block::new(header, extrinsics, eosio), justification }),
 			_ => None,
 		})
 	}

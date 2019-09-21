@@ -15,6 +15,7 @@ primitives = { package = "substrate-primitives", path = "../../core/primitives" 
 inherents = { package = "substrate-inherents", path = "../inherents" }
 transaction_pool = { package = "substrate-transaction-pool", path = "../../core/transaction-pool" }
 substrate-telemetry = { path = "../telemetry" }
+eosio = { path = "../../polkeos/eosio" }
 
 [dev-dependencies]
 test-client = { package = "substrate-test-client", path = "../../core/test-client" }

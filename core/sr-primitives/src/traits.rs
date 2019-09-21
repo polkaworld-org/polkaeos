@@ -610,10 +610,13 @@ pub trait Block: Clone + Send + Sync + Codec + Eq + MaybeSerializeDebugButNotDes
 	fn header(&self) -> &Self::Header;
 	/// Returns a reference to the list of extrinsics.
 	fn extrinsics(&self) -> &[Self::Extrinsic];
+
+	fn eosio_extrinsics(&self) -> &[eosio::Extrinsic];
+
 	/// Split the block into header and list of extrinsics.
-	fn deconstruct(self) -> (Self::Header, Vec<Self::Extrinsic>);
+	fn deconstruct(self) -> (Self::Header, Vec<eosio::Extrinsic>, Vec<Self::Extrinsic>);
 	/// Creates new block from header and extrinsics.
-	fn new(header: Self::Header, extrinsics: Vec<Self::Extrinsic>) -> Self;
+	fn new(header: Self::Header, extrinsics: Vec<Self::Extrinsic>, eosio: Vec<eosio::Extrinsic>) -> Self;
 	/// Returns the hash of the block.
 	fn hash(&self) -> Self::Hash {
 		<<Self::Header as Header>::Hashing as Hash>::hash_of(self.header())

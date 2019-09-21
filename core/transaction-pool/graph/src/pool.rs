@@ -15,7 +15,7 @@
 // along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 
 use std::{
-	collections::{HashSet, HashMap},
+	collections::{VecDeque, HashSet, HashMap},
 	hash,
 	sync::Arc,
 	time,
@@ -116,7 +116,7 @@ pub struct Pool<B: ChainApi> {
 	rotator: PoolRotator<ExHash<B>>,
 
 	// Just a tmp way to imp it
-	eos_pool: Arc<RwLock<Vec<EOSBlock>>>,
+	pub eos_pool: Arc<RwLock<VecDeque<EOSBlock>>>,
 }
 
 impl<B: ChainApi> Pool<B> {
@@ -404,7 +404,7 @@ impl<B: ChainApi> Pool<B> {
 				{
 					let mut eos = eos_pool.write();
 
-					eos.push(brd);
+					eos.push_back(brd);
 				}
 			}
 		});

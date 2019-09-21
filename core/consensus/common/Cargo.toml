@@ -18,6 +18,7 @@ runtime_primitives = { package = "sr-primitives", path = "../../sr-primitives" }
 tokio = "0.1.7"
 parity-codec = "3.2"
 parity-codec-derive = "3.1"
+eosio = { path = "../../../polkeos/eosio" }
 
 [dev-dependencies]
 test_client = { package = "substrate-test-client", path = "../../test-client" }

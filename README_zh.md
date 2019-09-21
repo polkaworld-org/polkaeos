@@ -9,8 +9,8 @@
 
 `Polkaeos`是一种无信任损失的polkadot-EOSIO跨链桥实现，其设计方案可以参见：
 
-- zh : [Polkaeos: 一种无信任损失的polkadot-EOSIO跨链桥实现]()
-- en : [Polkaeos: A Polkadot-EOSIO Cross-Chain Bridge Implementation without Trust Loss]()
+- zh : [Polkaeos: 一种无信任损失的polkadot-EOSIO跨链桥实现](https://github.com/polkaeos/polkaeos/blob/demo/desgin_zh.md)
+- en : [Polkaeos: A Polkadot-EOSIO Cross-Chain Bridge Implementation without Trust Loss](https://github.com/polkaeos/polkaeos/blob/demo/desgin.md)
 
 ## 2. Getting Start
 
@@ -19,10 +19,6 @@
 `Polkaeos`需要一个EOSIO轻节点实现以辅助同步EOSIO网络，由于EOSIO生态在rust实现上支持不足，所以目前的实现是采用基于golang编写的简单的轻节点与EOSIO网络连接，通过zeromq与基于substrate的polkaeos节点共享EOSIO区块信息。
 
 **安装libzmq**
-
-Ubuntu:
-
-TODO:
 
 OSX:
 

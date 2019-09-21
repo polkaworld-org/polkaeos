@@ -1,9 +1,10 @@
 # Polkaeos
 
-- [Polkaeos](#polkaeos)
-  - [Introduction](#1-introduction)
-  - [Getting Start](#2-getting-start)
-  - [TODOs](#3-todos)
+- [Introduction](#1-introduction)
+- [Getting Start](#2-getting-start)
+- [TODOs](#3-todos)
+
+[中文](https://github.com/polkaeos/polkaeos/blob/demo/README_zh.md)
 
 ## 1. Introduction
 

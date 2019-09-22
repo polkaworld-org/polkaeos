@@ -118,7 +118,7 @@ The second is the development of Polkaeos as a chain of relay bridges. The imple
 
 Finally, Polkaeos needs a lot of contract development work on the EOSIO side, especially the support to the relay miner node. Since this part is relatively independent, the development amount will not be very large.
 
-In the future short-term development plan of Polkaeos (about three months), the first three points mentioned above will be completed and a Bridge implementation of Token class state relay similar to [ChainX](https://github.com/chainx-org/ChainX) will be completed.
+In the future short-term development plan of Polkaeos (about three months), the first and three points mentioned above will be completed and a Bridge implementation of Token class state relay similar to [ChainX](https://github.com/chainx-org/ChainX) will be completed.
 
 In the medium-term planning of Polkaeos, it focuses on the following three directions:
 
